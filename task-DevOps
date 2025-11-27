@@ -1,0 +1,19 @@
+This is the complete and detailed DevOps Three-Tier AWS Architecture and CI/CD Pipeline.
+This diagram visually represents the flow of traffic and components across the tiers as follows:
+1. UI/Frontend Tier
+User Traffic enters through Amazon Route 53 (DNS).
+Route 53 directs traffic to Amazon CloudFront (CDN).
+CloudFront serves static content from an Amazon S3 bucket, caching assets at the edge for low latency.
+2. API/Backend Tier
+CloudFront directs API calls (HTTPS) to the Application Load Balancer (ALB).
+The ALB distributes traffic across multiple ECS Fargate Tasks running the containerized API within Private Subnets.
+Fargate Tasks securely access secrets (like database credentials) from AWS Secrets Manager.
+3. Database Tier
+The API's Fargate Tasks communicate via the private network to the Amazon RDS Primary Instance (Multi-AZ) for read and write operations.
+Read-heavy queries are directed to RDS Read Replicas to offload the primary instance. Both RDS instances reside in Private Subnets for security and utilize Multi-AZ for high av>
+4. CI/CD Pipeline
+GitHub Repository triggers GitHub Actions workflows.
+The workflow builds the Docker image and pushes it to Amazon ECR.
+The workflow then deploys the API by updating the ECS Service with the new image tag.
+It deploys the UI by syncing files to the S3 bucket and triggering a CloudFront Invalidation to clear the old cache.
+The pipeline also handles Database Schema Migrations against the RDS instance before deploying the new API version.
